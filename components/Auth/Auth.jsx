@@ -11,13 +11,7 @@ const useStyles = createUseStyles(
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      marginTop: '4rem',
     },
-    title: {
-      textAlign: 'center',
-      marginBottom: '4rem',
-    },
-
   }),
   { theming }
 )
@@ -44,10 +38,7 @@ export default function Auth() {
   }
 
   return (
-    <Container className={classes.container} size="xs">
-      <div className={classes.title}>
-        <Title order={1}>Candidately</Title>
-      </div>
+    <>
       <Button
         variant="outline"
         size="md"
@@ -60,6 +51,6 @@ export default function Auth() {
       >
         {loading ? 'Loading' : 'Login with Google'}
       </Button>
-    </Container>
+    </>
   )
 }

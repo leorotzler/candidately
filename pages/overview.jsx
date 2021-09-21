@@ -19,7 +19,8 @@ export default function Overview({ user }) {
           title,
           link,
           date,
-          contact
+          contact,
+          created_at
          `
       )
 
