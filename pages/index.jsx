@@ -31,6 +31,7 @@ const useStyles = createUseStyles(
       transform: 'rotate(180deg)',
       backgroundImage: `url(${waveTop.src})`,
       backgroundSize: 'cover',
+      pointerEvents: 'none',
     },
     waveTopDarker: {
       position: 'absolute',
@@ -40,6 +41,7 @@ const useStyles = createUseStyles(
       transform: 'rotate(180deg)',
       backgroundImage: `url(${waveTopDarker.src})`,
       backgroundSize: 'cover',
+      pointerEvents: 'none',
     },
     wave: {
       position: 'absolute',
@@ -48,6 +50,7 @@ const useStyles = createUseStyles(
       height: 1000,
       backgroundImage: `url(${wave.src})`,
       backgroundSize: 'cover',
+      pointerEvents: 'none',
     },
     waveDarker: {
       position: 'absolute',
@@ -56,6 +59,7 @@ const useStyles = createUseStyles(
       height: 1000,
       backgroundImage: `url(${waveDarker.src})`,
       backgroundSize: 'cover',
+      pointerEvents: 'none',
     },
     title: {
       textAlign: 'right',
