@@ -1,19 +1,16 @@
 import { Badge } from '@mantine/core'
 
-export default function TheBadge({ children, ...rest }) {
+export default function TheBadge({ backgroundColor }) {
   return (
-    <Badge
-      styles={{
-        root: {
-          borderTopLeftRadius: 0,
-          borderTopRightRadius: '8px',
-          borderBottomLeftRadius: '8px',
-          borderBottomRightRadius: 0,
-        },
+    <div
+      style={{
+        position: 'absolute',
+        left: 10,
+        height: '10px',
+        width: '10px',
+        borderRadius: '32px',
+        background: backgroundColor
       }}
-      {...rest}
-    >
-      {children}
-    </Badge>
+    />
   )
 }
