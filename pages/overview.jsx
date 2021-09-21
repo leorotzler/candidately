@@ -1,5 +1,4 @@
-import React, {useEffect} from 'react'
-import { useState } from 'react/cjs/react.development'
+import React, {useState, useEffect} from 'react'
 import Layout from '../components/Layout/Layout'
 import Table from '../components/Table/Table'
 import { serverSidePropsAndRedirects } from '../utils/page'
