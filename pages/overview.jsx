@@ -1,17 +1,55 @@
-import React from 'react'
+import React, {useEffect} from 'react'
+import { useState } from 'react/cjs/react.development'
 import Layout from '../components/Layout/Layout'
 import Table from '../components/Table/Table'
 import { serverSidePropsAndRedirects } from '../utils/page'
+import { supabase } from '../utils/supabaseClient'
 
 export default function Overview({ user }) {
-  console.log(user)
+  const [data, setData] = useState([])
+  const [loading, setLoading] = useState(false)
 
+  async function getApplications() {
+    try {
+      setLoading(true)
+      const { data, error } = await supabase.from('applications').select(
+        `
+          id,
+          status,
+          title,
+          link,
+          date,
+          contact
+         `
+      )
 
+      if (data) {
+        setData(data)
+      }
+    } catch (error) {
+      console.log(error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    getApplications()
+    const subscription = supabase
+      .from(`applications:user_id=eq.${supabase.auth.user().id}`)
+      .on('INSERT', getApplications)
+      .on('UPDATE', getApplications)
+      .on('DELETE', getApplications)
+      .subscribe()
+    return () => {
+      supabase.removeSubscription(subscription)
+    }
+  }, [])
 
   return (
     <Layout>
       <div>
-        <Table />
+        <Table data={data} />
       </div>
     </Layout>
   )

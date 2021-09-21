@@ -88,9 +88,8 @@ const useStyles = createUseStyles(
   { theming }
 )
 
-export default function Table() {
+export default function Table({ data }) {
   const classes = useStyles()
-  const [data, setData] = useState([])
   const [loading, setLoading] = useState(true)
   const theme = useMantineTheme()
 
@@ -121,43 +120,6 @@ export default function Table() {
       setLoading(false)
     }
   }
-
-  async function getApplications() {
-    try {
-      setLoading(true)
-      const { data, error } = await supabase.from('applications').select(
-        `
-          id,
-          status,
-          title,
-          link,
-          date,
-          contact
-         `
-      )
-
-      if (data) {
-        setData(data)
-      }
-    } catch (error) {
-      console.log(error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    getApplications()
-    const subscription = supabase
-      .from(`applications:user_id=eq.${supabase.auth.user().id}`)
-      .on('INSERT', getApplications)
-      .on('UPDATE', getApplications)
-      .on('DELETE', getApplications)
-      .subscribe()
-    return () => {
-      supabase.removeSubscription(subscription)
-    }
-  }, [])
 
   const columns = React.useMemo(
     () => [
@@ -209,6 +171,9 @@ export default function Table() {
       columns,
       data,
       defaultColumn,
+      initialState: {
+        sortBy: [{ id: 'created_at' }],
+      },
     },
     useFlexLayout,
     useResizeColumns,
