@@ -1,14 +1,23 @@
 /* eslint-disable react/jsx-key */
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   useTable,
   useBlockLayout,
   useResizeColumns,
+  useSortBy,
   useFlexLayout,
 } from 'react-table'
+import { format } from 'date-fns'
+import Link from 'next/link'
 import { createUseStyles } from 'react-jss'
-import { theming } from '@mantine/core'
-import { getStatusBadgeFromStatus } from '../../utils/statusHelper'
+import { theming, useMantineTheme, NativeSelect, Group } from '@mantine/core'
+import {
+  statusEnum,
+  getStatusBadgeFromStatus,
+  getStatusLabelsFromStatus,
+} from '../../utils/statusHelper'
+import InsertForm from '../InsertForm/InsertForm'
+import { supabase } from '../../utils/supabaseClient'
 
 const useStyles = createUseStyles(
   (theme) => ({
@@ -21,6 +30,7 @@ const useStyles = createUseStyles(
       borderBottomLeftRadius: '8px',
       borderTopRightRadius: '8px',
       overflow: 'auto',
+      fontSize: theme.fontSizes.sm
     },
     headRow: {
       textTransform: 'uppercase',
@@ -58,7 +68,7 @@ const useStyles = createUseStyles(
     resizer: {
       display: 'inline-block',
       background: 'transparent',
-      width: '5px',
+      width: '3px',
       height: '100%',
       position: 'absolute',
       right: '2px',
@@ -67,12 +77,116 @@ const useStyles = createUseStyles(
       zIndex: '1',
       touchAction: 'none',
     },
+    link: {
+      color: theme.colors.cyan[6],
+      textDecoration: 'none',
+      '&:hover': {
+        textDecoration: 'underline',
+      },
+    },
   }),
   { theming }
 )
 
-export default function Table({ columns, data }) {
+export default function Table() {
   const classes = useStyles()
+  const [data, setData] = useState([])
+  const [loading, setLoading] = useState(true)
+  const theme = useMantineTheme()
+
+  async function updateStatus(event, id) {
+    try {
+      setLoading(true)
+      const user = supabase.auth.user()
+
+      const updates = {
+        id,
+        status: event.target.value,
+        updated_at: new Date(),
+        user_id: user.id
+      }
+
+      let { data, error } = await supabase.from('applications').upsert(updates)
+
+      if (error) {
+        throw error
+      }
+
+      if (data) {
+
+      }
+    } catch (error) {
+      alert(error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function getApplications() {
+    try {
+      setLoading(true)
+      const { data, error } = await supabase.from('applications').select(
+        `
+          id,
+          status,
+          title,
+          link,
+          date,
+          contact
+         `
+      )
+
+      if (data) {
+        setData(data)
+      }
+    } catch (error) {
+      console.log(error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    getApplications()
+    const subscription = supabase
+      .from(`applications:user_id=eq.${supabase.auth.user().id}`)
+      .on('INSERT', getApplications)
+      .on('UPDATE', getApplications)
+      .on('DELETE', getApplications)
+      .subscribe()
+    return () => {
+      supabase.removeSubscription(subscription)
+    }
+  }, [])
+
+  const columns = React.useMemo(
+    () => [
+      {
+        Header: 'Status',
+        accessor: 'status',
+      },
+      {
+        Header: 'Title',
+        accessor: 'title',
+        width: 200,
+      },
+      {
+        Header: 'Date',
+        accessor: 'date',
+        width: 100,
+      },
+      {
+        Header: 'Link',
+        accessor: 'link',
+        width: 70,
+      },
+      {
+        Header: 'Contact',
+        accessor: 'contact',
+      },
+    ],
+    []
+  )
 
   const defaultColumn = React.useMemo(
     () => ({
@@ -97,21 +211,35 @@ export default function Table({ columns, data }) {
       defaultColumn,
     },
     useFlexLayout,
-    useResizeColumns
+    useResizeColumns,
+    useSortBy
   )
-
-  console.log(getStatusBadgeFromStatus('todo'));
 
   return (
     <div>
-
+      <div>
+        <InsertForm />
+      </div>
       <div {...getTableProps()} className={classes.table}>
         <div>
           {headerGroups.map((headerGroup) => (
-            <div {...headerGroup.getHeaderGroupProps()} className={classes.headRow}>
+            <div
+              {...headerGroup.getHeaderGroupProps()}
+              className={classes.headRow}
+            >
               {headerGroup.headers.map((column) => (
-                <div {...column.getHeaderProps()} className={classes.th}>
+                <div
+                  {...column.getHeaderProps(column.getSortByToggleProps())}
+                  className={classes.th}
+                >
                   {column.render('Header')}
+                  <span>
+                    {column.isSorted
+                      ? column.isSortedDesc
+                        ? ' 🔽'
+                        : ' 🔼'
+                      : ''}
+                  </span>
                   <div
                     {...column.getResizerProps()}
                     className={`${classes.resizer} ${
@@ -130,11 +258,64 @@ export default function Table({ columns, data }) {
             return (
               <div {...row.getRowProps()} className={classes.tr}>
                 {row.cells.map((cell) => {
-                  console.log(cell)
                   if (cell.column.id === 'status') {
                     return (
                       <div {...cell.getCellProps()} className={classes.td}>
-                        {getStatusBadgeFromStatus(cell.value)}
+                        <Group>
+                          {getStatusBadgeFromStatus(cell.value)}
+                          <NativeSelect
+                            onChange={(event) =>
+                              updateStatus(event, row.original.id)
+                            }
+                            value={cell.value}
+                            style={{
+                              marginLeft: '20px',
+                              borderBottom: `1px solid ${theme.colors.dark[3]}`,
+                            }}
+                            data={Object.entries(statusEnum).map((status) => {
+                              return {
+                                value: status[1],
+                                label: getStatusLabelsFromStatus(status[1]),
+                              }
+                            })}
+                          />
+                        </Group>
+                      </div>
+                    )
+                  }
+                  if (cell.column.id === 'link') {
+                    return (
+                      <div {...cell.getCellProps()} className={classes.td}>
+                        <div>
+                          {cell.value && (
+                            <a
+                              className={classes.link}
+                              href={cell.value}
+                              rel="noreferrer"
+                              target="_blank"
+                            >
+                              Link
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  }
+                  if (cell.column.id === 'contact') {
+                    return (
+                      <div {...cell.getCellProps()} className={classes.td}>
+                        <span style={{ whiteSpace: 'pre-wrap' }}>
+                          {cell.value}
+                        </span>
+                      </div>
+                    )
+                  }
+                  if (cell.column.id === 'date') {
+                    return (
+                      <div {...cell.getCellProps()} className={classes.td}>
+                        {cell.value && (
+                          <>{format(new Date(cell.value), 'E, MMM d')}</>
+                        )}
                       </div>
                     )
                   }

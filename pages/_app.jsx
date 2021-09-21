@@ -53,7 +53,7 @@ export default function App(props) {
       body: JSON.stringify({ event, session }),
     }).then(() => {
       if (event === 'SIGNED_IN') {
-        router.push('/').then(() => {
+        router.push('/overview').then(() => {
           setWaitingForLogin(false)
         })
       }
@@ -74,7 +74,7 @@ export default function App(props) {
         <MantineProvider
           theme={{
             /** Put your mantine theme override here */
-            primaryColor: 'lime',
+            primaryColor: 'cyan',
             colorScheme: 'dark',
           }}
         >

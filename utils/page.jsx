@@ -6,7 +6,7 @@ export async function serverSidePropsAndRedirects(req) {
     return {
       props: {},
       redirect: {
-        destination: '/login',
+        destination: '/',
       },
     }
   }
@@ -16,5 +16,24 @@ export async function serverSidePropsAndRedirects(req) {
     props: {
       user,
     },
+  }
+}
+
+export async function redirectIfUser(req) {
+  const { user } = await supabase.auth.api.getUserByCookie(req)
+
+  if (user) {
+    return {
+      props: {
+        user
+      },
+      redirect: {
+        destination: '/overview',
+      },
+    }
+  }
+
+  return {
+    props: {},
   }
 }
