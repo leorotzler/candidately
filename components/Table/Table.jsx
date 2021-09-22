@@ -7,11 +7,17 @@ import {
   useSortBy,
   useFlexLayout,
 } from 'react-table'
-import { FaAngleDown, FaAngleUp } from 'react-icons/fa'
+import { FaAngleDown, FaAngleUp, FaTrashAlt } from 'react-icons/fa'
 import { format } from 'date-fns'
 import Link from 'next/link'
 import { createUseStyles } from 'react-jss'
-import { theming, useMantineTheme, NativeSelect, Group } from '@mantine/core'
+import {
+  theming,
+  useMantineTheme,
+  Button,
+  NativeSelect,
+  Group,
+} from '@mantine/core'
 import {
   statusEnum,
   getStatusBadgeFromStatus,
@@ -31,7 +37,7 @@ const useStyles = createUseStyles(
       borderBottomLeftRadius: '8px',
       borderTopRightRadius: '8px',
       overflow: 'auto',
-      fontSize: theme.fontSizes.sm
+      fontSize: theme.fontSizes.sm,
     },
     headRow: {
       textTransform: 'uppercase',
@@ -40,6 +46,7 @@ const useStyles = createUseStyles(
       color: theme.colors.gray[3],
     },
     tr: {
+      position: 'relative',
       '&:last-child': {
         '& > div': {
           borderBottom: 0,
@@ -64,6 +71,7 @@ const useStyles = createUseStyles(
       position: 'relative',
       '&:last-child': {
         borderRight: 0,
+        paddingRight: 60,
       },
     },
     resizer: {
@@ -86,8 +94,13 @@ const useStyles = createUseStyles(
       },
     },
     sortingIcon: {
-      marginLeft: theme.spacing.xs
-    }
+      marginLeft: theme.spacing.xs,
+    },
+    delete: {
+      position: 'absolute',
+      top: 10,
+      right: 10,
+    },
   }),
   { theming }
 )
@@ -106,7 +119,7 @@ export default function Table({ data }) {
         id,
         status: event.target.value,
         updated_at: new Date(),
-        user_id: user.id
+        user_id: user.id,
       }
 
       let { data, error } = await supabase.from('applications').upsert(updates)
@@ -115,11 +128,22 @@ export default function Table({ data }) {
         throw error
       }
 
-      if (data) {
-
-      }
     } catch (error) {
       alert(error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function deleteApplication(id) {
+    try {
+      setLoading(true)
+      const user = supabase.auth.user()
+      const { data, error } = await supabase
+        .from('applications')
+        .upsert({ id, deleted: true, user_id: user.id })
+    } catch (error) {
+      console.log(error)
     } finally {
       setLoading(false)
     }
@@ -300,6 +324,16 @@ export default function Table({ data }) {
                     </div>
                   )
                 })}
+                <div className={classes.delete}>
+                  <Button
+                    variant="outline"
+                    color="red"
+                    onClick={() => deleteApplication(row.original.id)}
+                    size="xs"
+                  >
+                    <FaTrashAlt />
+                  </Button>
+                </div>
               </div>
             )
           })}

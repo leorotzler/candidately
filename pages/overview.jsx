@@ -21,7 +21,7 @@ export default function Overview({ user }) {
           contact,
           created_at
          `
-      )
+      ).eq('deleted', false)
 
       if (data) {
         setData(data)
