@@ -51,7 +51,7 @@ export default function InsertForm() {
     status: statusEnum.TODO,
     title: '',
     link: '',
-    contact: 1,
+    contact: '',
   }
 
   const Schema = Yup.object().shape({
