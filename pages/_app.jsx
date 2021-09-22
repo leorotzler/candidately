@@ -34,7 +34,7 @@ export default function App(props) {
         }
         if (event === 'SIGNED_OUT') {
           setAuthenticatedState('not-authenticated')
-          router.push('/login')
+          router.push('/')
           setWaitingForLogin(false)
         }
       }

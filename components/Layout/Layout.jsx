@@ -9,11 +9,13 @@ import {
 } from '@mantine/core'
 import Link from 'next/link'
 import { createUseStyles } from 'react-jss'
-
+import { supabase } from '../../utils/supabaseClient'
 
 const useStyles = createUseStyles(
   (theme) => ({
     nav: {
+      display: 'flex',
+      justifyContent: 'space-between',
       margin: '1rem 0 3rem'
     },
     title: {
@@ -36,11 +38,20 @@ const useStyles = createUseStyles(
 export default function Layout({children}) {
   const classes = useStyles()
 
+  const logout = () => {
+    supabase.auth.signOut()
+  }
+
   return (
     <Container>
       <nav className={classes.nav}>
         <div className={classes.title}>
           <Link href="/">candidately</Link>
+        </div>
+        <div>
+          <Button color="red" variant="link" onClick={() => logout()}>
+            Logout
+          </Button>
         </div>
       </nav>
       <div>{children}</div>
