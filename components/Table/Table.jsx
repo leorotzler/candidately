@@ -7,6 +7,7 @@ import {
   useSortBy,
   useFlexLayout,
 } from 'react-table'
+import { FaAngleDown, FaAngleUp } from 'react-icons/fa'
 import { format } from 'date-fns'
 import Link from 'next/link'
 import { createUseStyles } from 'react-jss'
@@ -84,6 +85,9 @@ const useStyles = createUseStyles(
         textDecoration: 'underline',
       },
     },
+    sortingIcon: {
+      marginLeft: theme.spacing.xs
+    }
   }),
   { theming }
 )
@@ -168,6 +172,9 @@ export default function Table({ data }) {
     resetResizing,
   } = useTable(
     {
+      autoResetSortBy: false,
+      autoResetFilters: false,
+      autoResetGroupBy: false,
       columns,
       data,
       defaultColumn,
@@ -199,11 +206,15 @@ export default function Table({ data }) {
                 >
                   {column.render('Header')}
                   <span>
-                    {column.isSorted
-                      ? column.isSortedDesc
-                        ? ' 🔽'
-                        : ' 🔼'
-                      : ''}
+                    {column.isSorted ? (
+                      column.isSortedDesc ? (
+                        <FaAngleDown className={classes.sortingIcon} />
+                      ) : (
+                        <FaAngleUp className={classes.sortingIcon} />
+                      )
+                    ) : (
+                      ''
+                    )}
                   </span>
                   <div
                     {...column.getResizerProps()}
@@ -235,7 +246,6 @@ export default function Table({ data }) {
                             value={cell.value}
                             style={{
                               marginLeft: '20px',
-                              borderBottom: `1px solid ${theme.colors.dark[3]}`,
                             }}
                             data={Object.entries(statusEnum).map((status) => {
                               return {
